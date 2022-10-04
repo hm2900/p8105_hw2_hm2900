@@ -5,6 +5,7 @@ output: github_document
 
 ```{r setup}
 library(tidyverse)
+library(readxl)
 ```
 
 # Problem 1
@@ -85,6 +86,45 @@ nyc_transit_df %>%
 There are 60 distinct stations serve the A train. Of the stations that serve the A train, there are 17 stations that are ADA compliant.
 
 
+# Problem 2
+
+Read and clean the Mr.Trash Wheel sheet.
+
+```{r}
+mr_trash_df = 
+  read_excel("./Trash Wheel Collection Data.xlsx", sheet = 1, range = "A2:N550") %>%
+  janitor::clean_names() %>%
+  drop_na(dumpster) %>% 
+  mutate(sports_balls = as.integer(round(sports_balls, 0))) %>%
+  mutate(year = as.numeric(year)) %>%
+  mutate(trash_wheel = "Mr")
+mr_trash_df
+```
+
+Use a similar process to import, clean, and organize the data for Professor Trash Wheel. Combine this with the Mr. Trash Wheel dataset to produce a single tidy dataset.
+
+```{r}
+professor_trash_df = 
+  read_excel("./Trash Wheel Collection Data.xlsx", sheet = 2, range = "A2:M97") %>%
+  janitor::clean_names() %>%
+  drop_na(dumpster) %>%
+  mutate(trash_wheel = "Professor")
+professor_trash_df
+
+trash_wheel_tidy = 
+  bind_rows(mr_trash_df, professor_trash_df) %>%
+  relocate(trash_wheel, dumpster)
+trash_wheel_tidy
+```
+
+The total number of observations in "Mr.Trash Wheel" dataset is `r nrow(mr_trash_df)`, with key variables: `r colnames(mr_trash_df)`. 
+
+The total number of observations in "Professor Trash Wheel" dataset is `r nrow(professor_trash_df)`, with key variables: `r colnames(professor_trash_df)`. 
+
+And the The total number of observations in the combined single tidy "trash_wheel_tidy" dataset is `r nrow(trash_wheel_tidy)`, with key variables: `r colnames(trash_wheel_tidy)`. 
+
+The total weight of trash collected by Professor Trash Wheel is `r sum(pull(professor_trash_df, weight_tons))` tons.
+The total number of sports balls collected by Mr. Trash Wheel in 2020 is `r sum(pull(filter(mr_trash_df, year == 2020), sports_balls))`.
 
 
 
