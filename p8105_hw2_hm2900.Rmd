@@ -1,0 +1,70 @@
+---
+title: "p8105_hw2_hm2900"
+output: github_document
+---
+
+```{r setup}
+library(tidyverse)
+```
+
+## Load the NYC Transit Data
+
+Read and clean the data.retain line, station, name, station latitude / longitude, routes served, entry, vending, entrance type, and ADA compliance.
+
+```{r}
+nyc_transit_df = 
+  read_csv("./NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>% 
+  janitor::clean_names() %>%
+  select(-division, -staffing, -staff_hours, -free_crossover, 
+         -north_south_street, -east_west_street, -corner, -entrance_latitude, 
+         -entrance_longitude, -station_location, -entrance_location, -exit_only, 
+         -ada_notes) %>%
+  mutate(entry = recode(entry, "YES" = 1, "NO" = 0))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
