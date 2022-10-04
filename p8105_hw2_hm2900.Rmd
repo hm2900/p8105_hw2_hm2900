@@ -7,23 +7,82 @@ output: github_document
 library(tidyverse)
 ```
 
-## Load the NYC Transit Data
+# Problem 1
 
 Read and clean the data.retain line, station, name, station latitude / longitude, routes served, entry, vending, entrance type, and ADA compliance.
 
 ```{r}
 nyc_transit_df = 
-  read_csv("./NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>% 
+  read_csv(
+    "./NYC_Transit_Subway_Entrance_And_Exit_Data.csv", 
+    col_types = cols(Route8 = "c", Route9 = "c", Route10 = "c", Route11 = "c")) %>% 
   janitor::clean_names() %>%
-  select(-division, -staffing, -staff_hours, -free_crossover, 
-         -north_south_street, -east_west_street, -corner, -entrance_latitude, 
-         -entrance_longitude, -station_location, -entrance_location, -exit_only, 
-         -ada_notes) %>%
-  mutate(entry = recode(entry, "YES" = 1, "NO" = 0))
+  select(
+    line, station_name, station_latitude, station_longitude, 
+    starts_with("route"), entry, exit_only, vending, entrance_type, 
+    ada) %>% 
+  mutate(entry = recode(entry, "YES" = TRUE, "NO" = FALSE))
 ```
 
+The data set contains 19 variables: `line`, `station_name`, ``station_latitude`, `station_longitude`, `route1`-`route11`, `entry`, `exit_only`, `entrance_type`, `vending`, and `ada`. 
+For the data cleaning steps, first I cleaned the variables' names in the dataset, then I used selected the columns that I want. Finally I changed the entry variable from character (YES vs NO) to a logical variable. The dimension of the resulting dataset is 1,868 × 19. 
+These data are not tidy enough since route number should be a variable, as should route. That is, to obtain a tidy dataset we would need to convert `route` variables from wide to long format.
 
+## How many distinct stations are there?
 
+```{r}
+nyc_transit_df %>% 
+  select(station_name, line) %>% 
+  distinct
+```
+
+There are 465 distinct stations.
+
+## How many stations are ADA compliant?
+
+```{r}
+nyc_transit_df %>% 
+  filter(ada == TRUE) %>%
+  select(station_name, line) %>% 
+  distinct 
+```
+
+There are 84 stations that are ADA compliant.
+
+## What proportion of station entrances / exits without vending allow entrance?
+
+```{r}
+nyc_transit_df %>%
+  filter(vending == "NO") %>% 
+  pull(entry) %>% 
+  mean
+```
+
+The proportion station entrances / exits without vending is 37.7%.
+
+## How many distinct stations serve the A train? Of the stations that serve the A train, how many are ADA compliant?
+
+```{r}
+nyc_transit_df %>% 
+  pivot_longer(
+    route1:route11,
+    names_to = "route_number",
+    values_to = "route") %>% 
+  filter(route == "A") %>% 
+  select(station_name, line) %>% 
+  distinct
+
+nyc_transit_df %>% 
+  pivot_longer(
+    route1:route11,
+    names_to = "route_number",
+    values_to = "route") %>% 
+  filter(route == "A", ada == TRUE) %>% 
+  select(station_name, line) %>% 
+  distinct
+```
+
+There are 60 distinct stations serve the A train. Of the stations that serve the A train, there are 17 stations that are ADA compliant.
 
 
 
